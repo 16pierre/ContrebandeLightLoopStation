@@ -65,11 +65,16 @@ class MidiOutputTime(Observer):
         timing.register_observer(self, Timing.EVENT_TYPE_STEP_CHANGED)
 
     def notify(self, source, event_type):
-        step = self.timing.get_current_step()
-        if self.timing.get_step_status(self.last_step):
-            green(self.port, self.binding.notes_for_time[self.last_step])
-        else:
-            black(self.port, self.binding.notes_for_time[self.last_step])
+        self._refresh_output()
 
-        yellow(self.port, self.binding.notes_for_time[step])
-        self.last_step = step
+    def _refresh_output(self):
+        current_step = self.timing.get_current_step()
+        for step in range(len(self.binding.notes_for_time)):
+            if step == current_step:
+                yellow(self.port, self.binding.notes_for_time[step])
+            else:
+                if self.timing.get_step_status(step):
+                    green(self.port, self.binding.notes_for_time[step])
+                else:
+                    black(self.port, self.binding.notes_for_time[step])
+

@@ -5,6 +5,7 @@ import time, threading
 class Timing(Observed):
 
     EVENT_TYPE_STEP_CHANGED = "TIMING_STEP_CHANGED"
+    EVENT_TYPE_STEP_STATUS_CHANGED = "TIMING_STEP_STATUS_CHANGED"
     EVENT_TYPE_BPM_CHANGED = "TIMING_BPM_CHANGED"
 
     def __init__(self, number_of_steps, beats_per_step):
@@ -36,11 +37,13 @@ class Timing(Observed):
         return deepcopy(self._steps)
 
     def get_step_status(self, step):
+        if step >= len(self._steps):
+            return None
         return self._steps[step]
 
-    def set_step(self, step, is_on):
+    def set_step_status(self, step, is_on):
         self._steps[step] = is_on
-        self.notify_observers(self.EVENT_TYPE_STEP_CHANGED)
+        self.notify_observers(self.EVENT_TYPE_STEP_STATUS_CHANGED)
 
     def get_bpm(self):
         return self._bpm
