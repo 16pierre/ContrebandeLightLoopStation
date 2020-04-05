@@ -1,4 +1,4 @@
-from light_writer import LightWriter
+from light.light_writer import LightWriter
 import requests
 
 class HttpLightWriter(LightWriter):
@@ -24,3 +24,5 @@ class HttpLightWriter(LightWriter):
     def off(self):
         self._switch_gpio(0)
 
+    def neutral(self):
+        pass

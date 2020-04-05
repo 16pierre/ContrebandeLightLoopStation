@@ -10,3 +10,6 @@ class LightWriter:
 
     def off(self):
         raise NotImplementedError()
+
+    def neutral(self):
+        raise NotImplementedError()
