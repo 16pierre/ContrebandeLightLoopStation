@@ -3,6 +3,7 @@ import threading
 from midi.midi_bindings import MidiBindings
 from observer import Observed, Observer
 from datetime import datetime
+from midi.midi_output import MidiOutputGeneric
 
 class MidiInputSteps:
 
@@ -93,15 +94,27 @@ class MidiInputBpm(Observer):
 
 
 class MidiLightWriterController(Observer):
-    def __init__(self, light_writer, generic_listener):
+    def __init__(self, light_writer, generic_listener, bindings):
         super().__init__()
         self.light_writer = light_writer
+        self.generic_output = MidiOutputGeneric(bindings)
+        self.bindings = bindings
         generic_listener.register_observer(self, MidiGenericInputListener.EVENT_NOTE_OFF)
         generic_listener.register_observer(self, MidiGenericInputListener.EVENT_NOTE_ON)
+
+        self.generic_output.green(
+            bindings.generic_midi[MidiBindings.BUTTON_FORCE_ON],
+            blink=True)
 
     def notify(self, source, event_type, value = None):
         if value == MidiBindings.BUTTON_FORCE_ON:
             if event_type == MidiGenericInputListener.EVENT_NOTE_OFF:
                 self.light_writer.neutral()
+                self.generic_output.green(
+                    self.bindings.generic_midi[MidiBindings.BUTTON_FORCE_ON],
+                    blink=True)
             if event_type == MidiGenericInputListener.EVENT_NOTE_ON:
                 self.light_writer.on()
+                self.generic_output.green(
+                    self.bindings.generic_midi[MidiBindings.BUTTON_FORCE_ON],
+                    blink=False)

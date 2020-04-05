@@ -34,7 +34,8 @@ if __name__ == "__main__":
     input_bpm = MidiInputBpm(timing, generic_midi_input)
     midi_light_controller = MidiLightWriterController(
         priority_light_writer_factory.high(),
-        generic_midi_input
+        generic_midi_input,
+        midi_binding
     )
 
     timing.start_ticking()

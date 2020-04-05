@@ -11,25 +11,27 @@ COLOR_RED = 3
 COLOR_YELLOW = 5
 # Note: +1 => blink
 
+class MidiOutputGeneric:
+    def __init__(self, binding):
+        self.port = mido.open_output(binding.midi_port_name)
 
-def red(port, note):
-    msg = mido.Message('note_on', note=note, velocity=COLOR_RED)
-    port.send(msg)
+    def _send_velocity(self, note, velocity, blink):
+        if blink:
+            velocity = velocity + 1
+        msg = mido.Message('note_on', note=note, velocity=velocity)
+        self.port.send(msg)
 
+    def red(self, note, blink=False):
+        self._send_velocity(note, COLOR_RED, blink)
 
-def green(port, note):
-    msg = mido.Message('note_on', note=note, velocity=COLOR_GREEN)
-    port.send(msg)
+    def green(self, note, blink=False):
+        self._send_velocity(note, COLOR_GREEN, blink)
 
+    def black(self, note):
+        self._send_velocity(note, COLOR_BLACK, False)
 
-def black(port, note):
-    msg = mido.Message('note_on', note=note, velocity=COLOR_BLACK)
-    port.send(msg)
-
-
-def yellow(port, note):
-    msg = mido.Message('note_on', note=note, velocity=COLOR_YELLOW)
-    port.send(msg)
+    def yellow(self, note, blink=False):
+        self._send_velocity(note, COLOR_YELLOW, blink)
 
 
 class MidiOutputBpm:
@@ -37,7 +39,7 @@ class MidiOutputBpm:
     def __init__(self, timing, binding):
         self.binding = binding
         self.timing = timing
-        self.port = mido.open_output(binding.midi_port_name)
+        self.generic_output = MidiOutputGeneric(binding)
 
     def start_bpm_thread(self):
         t = threading.Thread(target=self._tick_bpm, daemon=True, args=()).start()
@@ -46,9 +48,9 @@ class MidiOutputBpm:
         while(True):
             # TODO: Replace this with a StepListener
             bpm = self.timing.get_bpm()
-            green(self.port, self.binding.generic_midi[MidiBindings.BUTTON_BPM])
+            self.generic_output.green(self.binding.generic_midi[MidiBindings.BUTTON_BPM])
             time.sleep(60.0 / bpm / 4.0)
-            black(self.port, self.binding.generic_midi[MidiBindings.BUTTON_BPM])
+            self.generic_output.black(self.binding.generic_midi[MidiBindings.BUTTON_BPM])
             time.sleep(60.0 / bpm / 4.0 * 3.0)
 
 
@@ -58,11 +60,11 @@ class MidiOutputTime(Observer):
         super().__init__()
         self.binding = binding
         self.timing = timing
-        self.port = mido.open_output(binding.midi_port_name)
+        self.generic_output = MidiOutputGeneric(binding)
         self.last_step = 0
 
         for note in self.binding.notes_for_time:
-            black(self.port, note)
+            self.generic_output.black(note)
 
         timing.register_observer(self, Timing.EVENT_TYPE_STEP_CHANGED)
 
@@ -73,10 +75,10 @@ class MidiOutputTime(Observer):
         current_step = self.timing.get_current_step()
         for step in range(len(self.binding.notes_for_time)):
             if step == current_step:
-                yellow(self.port, self.binding.notes_for_time[step])
+                self.generic_output.yellow(self.binding.notes_for_time[step])
             else:
                 if self.timing.get_step_status(step):
-                    green(self.port, self.binding.notes_for_time[step])
+                    self.generic_output.green(self.binding.notes_for_time[step])
                 else:
-                    black(self.port, self.binding.notes_for_time[step])
+                    self.generic_output.black(self.binding.notes_for_time[step])
 
