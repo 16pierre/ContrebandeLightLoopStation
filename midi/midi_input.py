@@ -58,6 +58,7 @@ class MidiGenericInputListener(Observed):
 
 class MidiInputBpm(Observer):
     def __init__(self, timing, generic_listener):
+        super().__init__()
         self.timing = timing
         self.last_presses = list()
         generic_listener.register_observer(self, MidiGenericInputListener.EVENT_NOTE_ON)
@@ -89,3 +90,18 @@ class MidiInputBpm(Observer):
         average = sum(deltas) / float(len(deltas))
         bpm = 60.0 / average
         self.timing.set_bpm(bpm)
+
+
+class MidiLightWriterController(Observer):
+    def __init__(self, light_writer, generic_listener):
+        super().__init__()
+        self.light_writer = light_writer
+        generic_listener.register_observer(self, MidiGenericInputListener.EVENT_NOTE_OFF)
+        generic_listener.register_observer(self, MidiGenericInputListener.EVENT_NOTE_ON)
+
+    def notify(self, source, event_type, value = None):
+        if value == MidiBindings.BUTTON_FORCE_ON:
+            if event_type == MidiGenericInputListener.EVENT_NOTE_OFF:
+                self.light_writer.neutral()
+            if event_type == MidiGenericInputListener.EVENT_NOTE_ON:
+                self.light_writer.on()
