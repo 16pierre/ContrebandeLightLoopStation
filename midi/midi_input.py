@@ -118,3 +118,28 @@ class MidiLightWriterController(Observer):
                 self.generic_output.green(
                     self.bindings.generic_midi[MidiBindings.BUTTON_FORCE_ON],
                     blink=False)
+
+
+class MidiPlayPauseController(Observer):
+    def __init__(self, timing, generic_listener, bindings):
+        super().__init__()
+        self.timing = timing
+        self.generic_output = MidiOutputGeneric(bindings)
+        self.bindings = bindings
+        generic_listener.register_observer(self, MidiGenericInputListener.EVENT_NOTE_ON)
+
+        self.generic_output.red(
+            bindings.generic_midi[MidiBindings.BUTTON_PLAY_PAUSE],
+            blink=True)
+
+    def notify(self, source, event_type, value = None):
+        if self.timing.is_paused():
+            self.timing.play()
+            self.generic_output.red(
+                    self.bindings.generic_midi[MidiBindings.BUTTON_PLAY_PAUSE],
+                    blink=True)
+        else:
+            self.timing.pause()
+            self.generic_output.red(
+                self.bindings.generic_midi[MidiBindings.BUTTON_PLAY_PAUSE],
+                blink=False)

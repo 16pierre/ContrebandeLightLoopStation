@@ -38,6 +38,12 @@ if __name__ == "__main__":
         midi_binding
     )
 
+    midi_play_pause_controller = MidiPlayPauseController(
+        timing,
+        generic_midi_input,
+        midi_binding
+    )
+
     timing.start_ticking()
 
     while(True):
