@@ -42,6 +42,8 @@ class Timing(Observed):
         return self._steps[step]
 
     def set_step_status(self, step, is_on):
+        if step >= len(self._steps):
+            return
         self._steps[step] = is_on
         self.notify_observers(self.EVENT_TYPE_STEP_STATUS_CHANGED)
 
