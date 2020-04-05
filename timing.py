@@ -2,6 +2,8 @@ from copy import deepcopy
 from observer import Observed
 import time, threading
 
+_TICK_MS = 5.0
+
 class Timing(Observed):
 
     EVENT_TYPE_STEP_CHANGED = "TIMING_STEP_CHANGED"
@@ -14,15 +16,31 @@ class Timing(Observed):
         self._steps = [False for _ in range(number_of_steps)]
         self._bpm = 120.0
         self._step = 0
+        self._clock_thread = None
+        self._stopped = False  # TODO: make this thread safe
+        self._tick_index = 0
 
     def start_ticking(self):
-        threading.Thread(target=self._tick, daemon=True, args=()).start()
+        self._clock_thread = threading.Thread(target=self._tick, daemon=True, args=())
+        self._clock_thread.start()
 
     def _tick(self):
         while(True):
-            bpm = self.get_bpm()
-            time.sleep(60.0 / bpm * self._beats_per_step)
-            threading.Thread(target=self.next_step, daemon=True, args=()).start()
+            time.sleep(_TICK_MS / 1000.0)
+            if self.is_paused():
+                continue
+            self._tick_index += 1
+            if self._tick_index > self._get_total_ticks_per_step():
+                self._tick_index = 0
+                threading.Thread(target=self.next_step, daemon=True, args=()).start()
+
+    def _get_total_ticks_per_step(self):
+        return 60.0 / self.get_bpm() * self._beats_per_step * 1000.0 / _TICK_MS
+
+    def reset(self):
+        self._step = 0
+        self._tick_index = 0
+        self.notify_observers(self.EVENT_TYPE_STEP_CHANGED)
 
     def next_step(self):
         self._step += 1
@@ -53,3 +71,12 @@ class Timing(Observed):
     def set_bpm(self, bpm):
         self._bpm = bpm
         self.notify_observers(self.EVENT_TYPE_BPM_CHANGED)
+
+    def pause(self):
+        self._stopped = True
+
+    def play(self):
+        self._stopped = False
+
+    def is_paused(self):
+        return self._stopped
