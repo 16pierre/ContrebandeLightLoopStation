@@ -22,7 +22,7 @@ class Timing(Observed):
         while(True):
             bpm = self.get_bpm()
             time.sleep(60.0 / bpm * self._beats_per_step)
-            self.next_step()
+            threading.Thread(target=self.next_step, daemon=True, args=()).start()
 
     def next_step(self):
         self._step += 1

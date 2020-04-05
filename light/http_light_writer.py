@@ -1,5 +1,6 @@
 from light.light_writer import LightWriter
 import requests
+import threading
 
 class HttpLightWriter(LightWriter):
     """ HTTP LightWriter, based on the ESPEASY protocols
@@ -17,12 +18,13 @@ class HttpLightWriter(LightWriter):
         r = requests.get("http://%s:%d/control?cmd=gpio,%d,%d" %
                          (self.ip, self.port, self.gpio, value))
         r.raise_for_status()
+        print(r.elapsed.total_seconds())
 
     def on(self):
-        self._switch_gpio(1)
+        threading.Thread(target=self._switch_gpio, daemon=True, args=(1,)).start()
 
     def off(self):
-        self._switch_gpio(0)
+        threading.Thread(target=self._switch_gpio, daemon=True, args=(0,)).start()
 
     def neutral(self):
         pass
