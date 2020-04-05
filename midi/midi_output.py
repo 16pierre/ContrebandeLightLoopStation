@@ -1,5 +1,6 @@
 from timing import Timing
 from observer import Observer
+from midi.midi_bindings import MidiBindings
 import mido
 import threading
 import time
@@ -43,11 +44,12 @@ class MidiOutputBpm:
 
     def _tick_bpm(self):
         while(True):
+            # TODO: Replace this with a StepListener
             bpm = self.timing.get_bpm()
-            time.sleep(60.0 / bpm / 2.0)
-            green(self.port, self.binding.note_for_bpm)
-            time.sleep(60.0 / bpm / 2.0)
-            black(self.port, self.binding.note_for_bpm)
+            green(self.port, self.binding.generic_midi[MidiBindings.BUTTON_BPM])
+            time.sleep(60.0 / bpm / 4.0)
+            black(self.port, self.binding.generic_midi[MidiBindings.BUTTON_BPM])
+            time.sleep(60.0 / bpm / 4.0 * 3.0)
 
 
 class MidiOutputTime(Observer):
@@ -64,7 +66,7 @@ class MidiOutputTime(Observer):
 
         timing.register_observer(self, Timing.EVENT_TYPE_STEP_CHANGED)
 
-    def notify(self, source, event_type):
+    def notify(self, source, event_type, value = None):
         self._refresh_output()
 
     def _refresh_output(self):

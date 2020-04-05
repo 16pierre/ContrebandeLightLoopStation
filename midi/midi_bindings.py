@@ -2,15 +2,18 @@
 class MidiBindings:
     """ Data structure representing which buttons to use on a midi controller """
 
-    def __init__(self, notes_for_time, note_for_bpm, midi_port_name):
+    BUTTON_FORCE_ON = "FORCE_ON"
+    BUTTON_BPM = "BPM"
+
+    def __init__(self, notes_for_time, midi_port_name, generic_midi):
         """
         :param notes_for_time: list[int], note for each beat/time
-        :param note_for_bpm: int, note used to tap/display bpm
         :param midi_port: string, name of midi controller
+        :param generic_midi: dict[string, int]: translates keys to symbols to be handled
         """
         self.notes_for_time = notes_for_time
-        self.note_for_bpm = note_for_bpm
         self.midi_port_name = midi_port_name
+        self.generic_midi = generic_midi
 
 
 """
@@ -33,6 +36,10 @@ APC_KEY_25 = MidiBindings(
     [i + 16 for i in range(8)] +
     [i + 8 for i in range(8)] +
     [i + 0 for i in range(8)],
-    71,
-    "APC Key 25"
+    "APC Key 25",
+    {
+        MidiBindings.BUTTON_FORCE_ON: 83, # SOLO button
+        MidiBindings.BUTTON_BPM: 71  # DEVICE button
+    }
+
 )

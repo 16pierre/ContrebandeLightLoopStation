@@ -11,7 +11,7 @@ class LightStepListener(Observer):
 
         self.timing.register_observer(self, Timing.EVENT_TYPE_STEP_CHANGED)
 
-    def notify(self, source, event_type):
+    def notify(self, source, event_type, value = None):
         current_step_status = self.timing.get_step_status(
             self.timing.get_current_step())
         if current_step_status:

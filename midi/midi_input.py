@@ -1,5 +1,7 @@
 import mido
 import threading
+from midi.midi_bindings import MidiBindings
+from observer import Observed, Observer
 from datetime import datetime
 
 class MidiInputSteps:
@@ -26,11 +28,14 @@ class MidiInputSteps:
         except ValueError:
             return
 
-class MidiInputBpm:
-    def __init__(self, timing, binding):
+class MidiGenericInputListener(Observed):
+
+    EVENT_NOTE_ON = "MIDI_NOTE_ON"
+    EVENT_NOTE_OFF = "MIDI_NOTE_OFF"
+
+    def __init__(self, binding):
+        super().__init__()
         self.binding = binding
-        self.timing = timing
-        self.last_presses = list()
 
     def start_listening(self):
         t = threading.Thread(target=self._listen, daemon=True, args=()).start()
@@ -39,6 +44,27 @@ class MidiInputBpm:
         with mido.open_input(self.binding.midi_port_name) as inport:
             for msg in inport:
                 self.handle(msg)
+
+    def handle(self, midi_msg):
+        if midi_msg.type not in ["note_on", "note_off"]:
+            return
+
+        note = midi_msg.note
+        for (k, v) in self.binding.generic_midi.items():
+            if v == note:
+                event_type = self.EVENT_NOTE_ON if midi_msg.type == "note_on" \
+                        else self.EVENT_NOTE_OFF
+                self.notify_observers(event_type, k)
+
+class MidiInputBpm(Observer):
+    def __init__(self, timing, generic_listener):
+        self.timing = timing
+        self.last_presses = list()
+        generic_listener.register_observer(self, MidiGenericInputListener.EVENT_NOTE_ON)
+
+    def notify(self, source, event_type, value):
+        if value == MidiBindings.BUTTON_BPM:
+            self._pressed()
 
     def _pressed(self):
         self.last_presses.append(datetime.now())
@@ -63,12 +89,3 @@ class MidiInputBpm:
         average = sum(deltas) / float(len(deltas))
         bpm = 60.0 / average
         self.timing.set_bpm(bpm)
-
-    def handle(self, midi_msg):
-        if midi_msg.type != "note_on":
-            return
-        note = midi_msg.note
-        if self.binding.note_for_bpm != note:
-            return
-
-        self._pressed()

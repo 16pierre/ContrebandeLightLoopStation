@@ -5,7 +5,7 @@ from timing import Timing
 from midi.midi_output import MidiOutputBpm, MidiOutputTime
 import time
 import midi.midi_bindings as bindings
-from midi.midi_input import MidiInputSteps, MidiInputBpm
+from midi.midi_input import MidiInputSteps, MidiInputBpm, MidiGenericInputListener
 
 
 DEFAULT_IP = "192.168.1.72"
@@ -25,11 +25,13 @@ if __name__ == "__main__":
     output_bpm = MidiOutputBpm(timing, midi_binding)
     output_bpm.start_bpm_thread()
 
-    input_bpm = MidiInputBpm(timing, midi_binding)
-    input_bpm.start_listening()
     input_steps = MidiInputSteps(timing, midi_binding)
     input_steps.start_listening()
 
+    generic_midi_input = MidiGenericInputListener(midi_binding)
+    generic_midi_input.start_listening()
+
+    input_bpm = MidiInputBpm(timing, generic_midi_input)
 
     timing.start_ticking()
 
