@@ -1,6 +1,7 @@
 from copy import deepcopy
 from observer import Observed
 import time, threading
+from light.light_state import LightState
 
 DELTA_NS_LIGHT_HEAT = 200_000_000.0
 
@@ -14,7 +15,7 @@ class Timing(Observed):
     def __init__(self, number_of_steps, beats_per_step):
         super().__init__()
         self._beats_per_step = float(beats_per_step)
-        self._steps = [False for _ in range(number_of_steps)]
+        self._steps = [LightState.OFF for _ in range(number_of_steps)]
         self._bpm = 120.0
         self._step = 0
         self._clock_thread = None
@@ -63,10 +64,10 @@ class Timing(Observed):
             return None
         return self._steps[step]
 
-    def set_step_status(self, step, is_on):
+    def set_step_status(self, step, state):
         if step >= len(self._steps):
             return
-        self._steps[step] = is_on
+        self._steps[step] = state
         self.notify_observers(self.EVENT_TYPE_STEP_STATUS_CHANGED)
 
     def get_bpm(self):

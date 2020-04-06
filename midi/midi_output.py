@@ -1,4 +1,5 @@
 from timing import Timing
+from light.light_state import LightState
 from observer import Observer
 from midi.midi_bindings import MidiBindings
 import mido
@@ -77,7 +78,9 @@ class MidiOutputTime(Observer):
             if step == current_step:
                 self.generic_output.yellow(self.binding.notes_for_time[step])
             else:
-                if self.timing.get_step_status(step):
+                if self.timing.get_step_status(step) == LightState.STROBE:
+                    self.generic_output.red(self.binding.notes_for_time[step])
+                elif self.timing.get_step_status(step) == LightState.ON:
                     self.generic_output.green(self.binding.notes_for_time[step])
                 else:
                     self.generic_output.black(self.binding.notes_for_time[step])

@@ -5,6 +5,7 @@ from midi.midi_bindings import MidiBindings
 from observer import Observed, Observer
 from datetime import datetime
 from midi.midi_output import MidiOutputGeneric
+from light.light_state import LightState
 
 
 class MidiInputSteps:
@@ -12,6 +13,7 @@ class MidiInputSteps:
     def __init__(self, timing, binding):
         self.binding = binding
         self.timing = timing
+        self._shift = False
 
     def start_listening(self):
         t = threading.Thread(target=self._listen, daemon=True, args=()).start()
@@ -22,12 +24,24 @@ class MidiInputSteps:
                 self.handle(msg)
 
     def handle(self, midi_msg):
+        note = midi_msg.note
+
+        if note == self.binding.generic_midi[MidiBindings.BUTTON_SHIFT]:
+            self._shift = midi_msg.type == "note_on"
+
         if midi_msg.type != "note_on":
             return
-        note = midi_msg.note
         try:
             step_index = self.binding.notes_for_time.index(note)
-            self.timing.set_step_status(step_index, not self.timing.get_step_status(step_index))
+            if self.timing.get_step_status(step_index) == LightState.OFF:
+                if self._shift:
+                    self.timing.set_step_status(step_index, LightState.STROBE)
+                else:
+                    self.timing.set_step_status(step_index, LightState.ON)
+            elif self.timing.get_step_status(step_index) == LightState.ON and self._shift:
+                self.timing.set_step_status(step_index, LightState.STROBE)
+            else:
+                self.timing.set_step_status(step_index, LightState.OFF)
         except ValueError:
             return
 

@@ -14,10 +14,5 @@ class LightStepListener(Observer):
     def notify(self, source, event_type, value = None):
         current_step_status = self.timing.get_step_status(
             self.timing.get_current_step())
-        if current_step_status:
-            self.light_writer.on()
-        else:
-            self.light_writer.off()
-
-
+        self.light_writer.set_state(current_step_status)
 
