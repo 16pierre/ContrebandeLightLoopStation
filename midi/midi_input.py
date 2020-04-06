@@ -1,9 +1,11 @@
 import mido
 import threading
+import math
 from midi.midi_bindings import MidiBindings
 from observer import Observed, Observer
 from datetime import datetime
 from midi.midi_output import MidiOutputGeneric
+
 
 class MidiInputSteps:
 
@@ -57,12 +59,14 @@ class MidiGenericInputListener(Observed):
                         else self.EVENT_NOTE_OFF
                 self.notify_observers(event_type, k)
 
+
 class MidiInputBpm(Observer):
     def __init__(self, timing, generic_listener):
         super().__init__()
         self.timing = timing
         self.last_presses = list()
         generic_listener.register_observer(self, MidiGenericInputListener.EVENT_NOTE_ON)
+        self.counter = 0
 
     def notify(self, source, event_type, value):
         if value == MidiBindings.BUTTON_BPM:
@@ -71,14 +75,12 @@ class MidiInputBpm(Observer):
     def _pressed(self):
         self.last_presses.append(datetime.now())
 
-        # Only keep the latest presses
-        while len(self.last_presses) > 4:
+        while len(self.last_presses) > 64:
             self.last_presses.pop(0)
 
-        # Only keep for less than 10 seconds
-        while len(self.last_presses) > 0 and \
-                (datetime.now() - self.last_presses[0]).total_seconds() > 10:
-            self.last_presses.pop(0)
+        if len(self.last_presses) > 0 and \
+                (datetime.now() - self.last_presses[len(self.last_presses) - 1]).total_seconds() > 3:
+            self.last_presses.clear()
 
         if len(self.last_presses) >= 3:
             self._change_bpm()
@@ -90,8 +92,16 @@ class MidiInputBpm(Observer):
                   for i in range(len(self.last_presses) - 1)]
         average = sum(deltas) / float(len(deltas))
         bpm = 60.0 / average
-        self.timing.set_bpm(bpm)
 
+        if len(deltas) < 8:
+            bpm = math.ceil(bpm)
+        elif len(deltas) < 16:
+            bpm = math.ceil(bpm * 2.0) / 2.0
+        else:
+            bpm = math.ceil(bpm * 4.0) / 4.0
+
+        self.timing.set_bpm(bpm)
+        print("New BPM: %s, deltas: %s" % (bpm, deltas))
 
 class MidiLightWriterController(Observer):
     def __init__(self, light_writer, generic_listener, bindings):
@@ -131,15 +141,24 @@ class MidiPlayPauseController(Observer):
         self.generic_output.red(
             bindings.generic_midi[MidiBindings.BUTTON_PLAY_PAUSE],
             blink=True)
+        self.generic_output.yellow(
+            bindings.generic_midi[MidiBindings.BUTTON_RESET],
+            blink=False)
 
     def notify(self, source, event_type, value = None):
-        if self.timing.is_paused():
-            self.timing.play()
-            self.generic_output.red(
+        if value == MidiBindings.BUTTON_PLAY_PAUSE:
+            if self.timing.is_paused():
+                self.timing.play()
+                self.generic_output.red(
+                        self.bindings.generic_midi[MidiBindings.BUTTON_PLAY_PAUSE],
+                        blink=True)
+            else:
+                self.timing.pause()
+                self.generic_output.red(
                     self.bindings.generic_midi[MidiBindings.BUTTON_PLAY_PAUSE],
-                    blink=True)
-        else:
-            self.timing.pause()
-            self.generic_output.red(
-                self.bindings.generic_midi[MidiBindings.BUTTON_PLAY_PAUSE],
-                blink=False)
+                    blink=False)
+
+        if value == MidiBindings.BUTTON_RESET:
+            self.timing.reset()
+            self.timing.play()
+

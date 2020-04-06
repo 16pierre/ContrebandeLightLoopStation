@@ -5,6 +5,7 @@ class MidiBindings:
     BUTTON_FORCE_ON = "FORCE_ON"
     BUTTON_BPM = "BPM"
     BUTTON_PLAY_PAUSE = "PLAY_PAUSE"
+    BUTTON_RESET = "RESET"
 
 
     def __init__(self, notes_for_time, midi_port_name, generic_midi):
@@ -41,7 +42,8 @@ APC_KEY_25 = MidiBindings(
     {
         MidiBindings.BUTTON_FORCE_ON: 83, # SOLO button
         MidiBindings.BUTTON_BPM: 71,  # DEVICE button
-        MidiBindings.BUTTON_PLAY_PAUSE: 1
+        MidiBindings.BUTTON_PLAY_PAUSE: 1,
+        MidiBindings.BUTTON_RESET: 0
     }
 
 )
