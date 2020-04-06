@@ -126,6 +126,9 @@ class MidiLightWriterController(Observer):
         self.generic_output.green(
             bindings.generic_midi[MidiBindings.BUTTON_FORCE_ON],
             blink=True)
+        self.generic_output.green(
+            bindings.generic_midi[MidiBindings.BUTTON_STROBE],
+            blink=False)
 
     def notify(self, source, event_type, value = None):
         if value == MidiBindings.BUTTON_FORCE_ON:
@@ -139,6 +142,12 @@ class MidiLightWriterController(Observer):
                 self.generic_output.green(
                     self.bindings.generic_midi[MidiBindings.BUTTON_FORCE_ON],
                     blink=False)
+
+        if value == MidiBindings.BUTTON_STROBE:
+            if event_type == MidiGenericInputListener.EVENT_NOTE_OFF:
+                self.light_writer.neutral()
+            if event_type == MidiGenericInputListener.EVENT_NOTE_ON:
+                self.light_writer.strobe()
 
 
 class MidiPlayPauseController(Observer):
