@@ -48,9 +48,9 @@ class MidiOutputBpm:
         while(True):
             # TODO: Replace this with a StepListener
             bpm = self.timing.get_bpm()
-            self.generic_output.green(self.binding.generic_midi[MidiBindings.BUTTON_BPM])
+            self.generic_output.green(self.binding.generic_midi[MidiBindings.BUTTON_TAP_BPM])
             time.sleep(60.0 / bpm / 4.0)
-            self.generic_output.black(self.binding.generic_midi[MidiBindings.BUTTON_BPM])
+            self.generic_output.black(self.binding.generic_midi[MidiBindings.BUTTON_TAP_BPM])
             time.sleep(60.0 / bpm / 4.0 * 3.0)
 
 

@@ -69,8 +69,20 @@ class MidiInputBpm(Observer):
         self.counter = 0
 
     def notify(self, source, event_type, value):
-        if value == MidiBindings.BUTTON_BPM:
+        if value == MidiBindings.BUTTON_TAP_BPM:
             self._pressed()
+        if value == MidiBindings.BUTTON_BPM_UP:
+            self._bpm_relative_change(True)
+        if value == MidiBindings.BUTTON_BPM_DOWN:
+            self._bpm_relative_change(False)
+
+    def _bpm_relative_change(self, is_up):
+        bpm = self.timing.get_bpm()
+        if is_up:
+            bpm += 0.25
+        else:
+            bpm -= 0.25
+        self.timing.set_bpm(bpm)
 
     def _pressed(self):
         self.last_presses.append(datetime.now())
@@ -101,7 +113,6 @@ class MidiInputBpm(Observer):
             bpm = math.ceil(bpm * 4.0) / 4.0
 
         self.timing.set_bpm(bpm)
-        print("New BPM: %s, deltas: %s" % (bpm, deltas))
 
 class MidiLightWriterController(Observer):
     def __init__(self, light_writer, generic_listener, bindings):

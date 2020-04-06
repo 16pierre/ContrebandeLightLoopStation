@@ -18,7 +18,7 @@ class HttpLightWriter(LightWriter):
         r = requests.get("http://%s:%d/control?cmd=gpio,%d,%d" %
                          (self.ip, self.port, self.gpio, value))
         r.raise_for_status()
-        print(r.elapsed.total_seconds())
+        #print(r.elapsed.total_seconds())
 
     def on(self):
         threading.Thread(target=self._switch_gpio, daemon=True, args=(1,)).start()

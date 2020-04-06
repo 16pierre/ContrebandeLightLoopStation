@@ -22,7 +22,6 @@ class Timing(Observed):
         self._last_step_ns = 0
         self._step_delta_ns = 1
         self._recalculate_step_delta_ns()
-        print(self._step_delta_ns)
 
     def start_ticking(self):
         self._clock_thread = threading.Thread(target=self._tick, daemon=True, args=())
@@ -75,6 +74,7 @@ class Timing(Observed):
 
     def set_bpm(self, bpm):
         self._bpm = bpm
+        print("New BPM: %s" % bpm)
         self.notify_observers(self.EVENT_TYPE_BPM_CHANGED)
 
     def pause(self):
