@@ -99,14 +99,15 @@ class MidiInputBpm(Observer):
         self.timing.set_bpm(bpm)
 
     def _pressed(self):
+        if len(self.last_presses) > 0 and \
+                (datetime.now() - self.last_presses[len(self.last_presses) - 1]).total_seconds() > 3:
+            self.last_presses.clear()
+
         self.last_presses.append(datetime.now())
 
         while len(self.last_presses) > 64:
             self.last_presses.pop(0)
 
-        if len(self.last_presses) > 0 and \
-                (datetime.now() - self.last_presses[len(self.last_presses) - 1]).total_seconds() > 3:
-            self.last_presses.clear()
 
         if len(self.last_presses) >= 3:
             self._change_bpm()

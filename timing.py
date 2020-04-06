@@ -75,6 +75,7 @@ class Timing(Observed):
 
     def set_bpm(self, bpm):
         self._bpm = bpm
+        self._recalculate_step_delta_ns()
         print("New BPM: %s" % bpm)
         self.notify_observers(self.EVENT_TYPE_BPM_CHANGED)
 
