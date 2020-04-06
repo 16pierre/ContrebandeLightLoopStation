@@ -2,7 +2,8 @@ from copy import deepcopy
 from observer import Observed
 import time, threading
 
-_TICK_MS = 5.0
+DELTA_NS_LIGHT_HEAT = 200_000_000.0
+
 
 class Timing(Observed):
 
@@ -18,28 +19,32 @@ class Timing(Observed):
         self._step = 0
         self._clock_thread = None
         self._stopped = False  # TODO: make this thread safe
-        self._tick_index = 0
+        self._last_step_ns = 0
+        self._step_delta_ns = 1
+        self._recalculate_step_delta_ns()
+        print(self._step_delta_ns)
 
     def start_ticking(self):
         self._clock_thread = threading.Thread(target=self._tick, daemon=True, args=())
         self._clock_thread.start()
 
+    def _recalculate_step_delta_ns(self):
+        self._step_delta_ns = 60.0 / self.get_bpm() * self._beats_per_step * float(1_000_000_000)
+
     def _tick(self):
         while(True):
-            time.sleep(_TICK_MS / 1000.0)
             if self.is_paused():
+                time.sleep(0.001)
                 continue
-            self._tick_index += 1
-            if self._tick_index > self._get_total_ticks_per_step():
-                self._tick_index = 0
-                threading.Thread(target=self.next_step, daemon=True, args=()).start()
 
-    def _get_total_ticks_per_step(self):
-        return 60.0 / self.get_bpm() * self._beats_per_step * 1000.0 / _TICK_MS
+            current_ns = time.clock_gettime_ns(time.CLOCK_REALTIME)
+            if current_ns - self._last_step_ns > self._step_delta_ns:
+                self._last_step_ns = current_ns
+                threading.Thread(target=self.next_step, daemon=True, args=()).start()
 
     def reset(self):
         self._step = 0
-        self._tick_index = 0
+        self._last_step_ns = time.clock_gettime_ns(time.CLOCK_REALTIME) - DELTA_NS_LIGHT_HEAT
         self.notify_observers(self.EVENT_TYPE_STEP_CHANGED)
 
     def next_step(self):
