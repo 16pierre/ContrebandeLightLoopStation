@@ -3,6 +3,7 @@ class MidiBindings:
     """ Data structure representing which buttons to use on a midi controller """
 
     BUTTON_FORCE_ON = "FORCE_ON"
+    BUTTON_FORCE_OFF = "FORCE_OFF"
     BUTTON_TAP_BPM = "BPM_TAP"
     BUTTON_BPM_UP = "BPM_UP"
     BUTTON_BPM_DOWN = "BPM_DOWN"
@@ -45,6 +46,7 @@ APC_KEY_25 = MidiBindings(
     "APC Key 25",
     {
         MidiBindings.BUTTON_FORCE_ON: 83, # SOLO button
+        MidiBindings.BUTTON_FORCE_OFF: 85, # MUTE button
         MidiBindings.BUTTON_TAP_BPM: 71,  # DEVICE button
         MidiBindings.BUTTON_PLAY_PAUSE: 1,
         MidiBindings.BUTTON_RESET: 0,

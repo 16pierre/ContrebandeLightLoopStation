@@ -5,7 +5,7 @@ from light.light_state import LightState
 
 # DELTA_NS_LIGHT_HEAT = 200_000_000.0
 DELTA_NS_LIGHT_HEAT = 100_000_000.0
-# TODO: BLACKOUT + CLEAR
+# TODO: CLEAR
 
 class Timing(Observed):
 

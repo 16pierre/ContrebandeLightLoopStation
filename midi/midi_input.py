@@ -144,11 +144,22 @@ class MidiLightWriterController(Observer):
         self.generic_output.green(
             bindings.generic_midi[MidiBindings.BUTTON_STROBE],
             blink=False)
+        self.generic_output.green(
+            bindings.generic_midi[MidiBindings.BUTTON_FORCE_OFF],
+            blink=False)
+
+        self._is_blackout = False
+
+    def _neutral(self):
+        if not self._is_blackout:
+            self.light_writer.neutral()
+        else:
+            self.light_writer.off()
 
     def notify(self, source, event_type, value = None):
         if value == MidiBindings.BUTTON_FORCE_ON:
             if event_type == MidiGenericInputListener.EVENT_NOTE_OFF:
-                self.light_writer.neutral()
+                self._neutral()
                 self.generic_output.green(
                     self.bindings.generic_midi[MidiBindings.BUTTON_FORCE_ON],
                     blink=True)
@@ -160,9 +171,23 @@ class MidiLightWriterController(Observer):
 
         if value == MidiBindings.BUTTON_STROBE:
             if event_type == MidiGenericInputListener.EVENT_NOTE_OFF:
-                self.light_writer.neutral()
+                self._neutral()
             if event_type == MidiGenericInputListener.EVENT_NOTE_ON:
                 self.light_writer.strobe()
+
+        if value == MidiBindings.BUTTON_FORCE_OFF:
+            if event_type == MidiGenericInputListener.EVENT_NOTE_ON:
+                self._is_blackout = not self._is_blackout
+                if not self._is_blackout:
+                    self.light_writer.neutral()
+                    self.generic_output.green(
+                        self.bindings.generic_midi[MidiBindings.BUTTON_FORCE_OFF],
+                        blink=False)
+                else:
+                    self.light_writer.off()
+                    self.generic_output.green(
+                        self.bindings.generic_midi[MidiBindings.BUTTON_FORCE_OFF],
+                        blink=True)
 
 
 class MidiPlayPauseController(Observer):
