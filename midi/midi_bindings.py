@@ -11,6 +11,7 @@ class MidiBindings:
     BUTTON_RESET = "RESET"
     BUTTON_STROBE = "STROBE"
     BUTTON_SHIFT = "SHIFT"
+    BUTTON_CLEAR = "CLEAR"
 
 
     def __init__(self, notes_for_time, midi_port_name, generic_midi):
@@ -53,7 +54,8 @@ APC_KEY_25 = MidiBindings(
         MidiBindings.BUTTON_BPM_UP: 64,
         MidiBindings.BUTTON_BPM_DOWN: 65,
         MidiBindings.BUTTON_STROBE: 68,
-        MidiBindings.BUTTON_SHIFT: 98
+        MidiBindings.BUTTON_SHIFT: 98,
+        MidiBindings.BUTTON_CLEAR: 81
     }
 
 )

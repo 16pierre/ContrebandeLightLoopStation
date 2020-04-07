@@ -31,6 +31,10 @@ class MidiInputSteps:
 
         if midi_msg.type != "note_on":
             return
+
+        if note == self.binding.generic_midi[MidiBindings.BUTTON_CLEAR]:
+            self.timing.clear_steps()
+
         try:
             step_index = self.binding.notes_for_time.index(note)
             if self.timing.get_step_status(step_index) == LightState.OFF:

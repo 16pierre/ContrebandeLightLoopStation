@@ -5,7 +5,6 @@ from light.light_state import LightState
 
 # DELTA_NS_LIGHT_HEAT = 200_000_000.0
 DELTA_NS_LIGHT_HEAT = 100_000_000.0
-# TODO: CLEAR
 
 class Timing(Observed):
 
@@ -88,3 +87,8 @@ class Timing(Observed):
 
     def is_paused(self):
         return self._stopped
+
+    def clear_steps(self):
+        for i in range(len(self._steps)):
+            self._steps[i] = LightState.OFF
+        self.notify_observers(self.EVENT_TYPE_STEP_STATUS_CHANGED)

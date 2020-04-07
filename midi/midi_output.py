@@ -68,6 +68,7 @@ class MidiOutputTime(Observer):
             self.generic_output.black(note)
 
         timing.register_observer(self, Timing.EVENT_TYPE_STEP_CHANGED)
+        timing.register_observer(self, Timing.EVENT_TYPE_STEP_STATUS_CHANGED)
 
     def notify(self, source, event_type, value = None):
         self._refresh_output()
